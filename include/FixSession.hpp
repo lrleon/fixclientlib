@@ -19,7 +19,10 @@ class FixSession
 {
 public:
 
-  FixSession(const std::string & ip_addr, int port);
+  FixSession(const std::string & ip_addr,
+	     const int port,
+	     const size_t heartbeat_period);
+  
   ~FixSession();
 
   bool logon(/* specific parameters */);
@@ -28,7 +31,7 @@ public:
     
   // TODO: other more traditional methods for observing the session state
 
-  bool logout(/* specific parameters */);
+  bool logout(/* specific parameters */); 
 
 private:
 
