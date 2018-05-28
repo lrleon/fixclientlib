@@ -47,11 +47,15 @@ private:
   /* Here we would put machinery for retrieving any session according
      several criteria.
 
+     This class would be a singleton
+
    */
 class FixSessionFinder
 {
   // TODO
 };
+
+extern void init();
 
 }
 

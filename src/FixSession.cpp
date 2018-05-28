@@ -13,6 +13,11 @@ using namespace std;
 using namespace asio;
 using namespace asio::ip;
 
+namespace FM
+{
+  extern io_service io_service;
+}
+
 class FM::FixSession::Impl
 {
 public:
@@ -23,7 +28,13 @@ public:
 
 private:
 
-  io_service io_service;
+  // TODO: persistence of not acknowledged messages. I would like a
+  // very simple model, preferably *non based on a sql data
+  // base*. Maybe a pair of sequential ring files that allow to
+  // retrieve entries given the sequence number. A file would have
+  // constant entry size having the sequence number and the offset of
+  // the body message in the second ring file. 
+
   tcp::resolver resolver;
   tcp::socket socket;
   tcp::endpoint endpoint;
@@ -62,7 +73,16 @@ public:
   {
     lock_guard<std::mutex> lock(mutex);
 
-    socket.connect(endpoint);
+    try
+      {
+	socket.connect(endpoint);
+      }
+    catch (exception & e)
+      {
+	// it is needed more stuff here
+	cout << e.what() << endl;
+	// probably rethrow 
+      }
 
     // here we must review if the connection has been
     // established. Next to send the logon header and wait for
@@ -98,6 +118,8 @@ FM::FixSession::FixSession(const std::string & ip_addr,
 {
   // empty
 }
+
+FM::FixSession::~FixSession() {}
 
 bool FM::FixSession::logon()
 {
