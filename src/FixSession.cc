@@ -1,8 +1,6 @@
 
 # include <FixSession.hpp>
 
-# include <atomic>
-# include <mutex>
 # include <chrono>
 # include <vector>
 # include <functional>
@@ -15,7 +13,7 @@ using namespace asio::ip;
 
 namespace FM
 {
-  extern io_service io_service;
+  extern io_service io_service; // global for all the process
 }
 
 class FM::FixSession::Impl
@@ -30,10 +28,10 @@ private:
 
   // TODO: persistence of not acknowledged messages. I would like a
   // very simple model, preferably *non based on a sql data
-  // base*. Maybe a pair of sequential ring files that allow to
-  // retrieve entries given the sequence number. A file would have
-  // constant entry size having the sequence number and the offset of
-  // the body message in the second ring file. 
+  // base*. Maybe a pair of very simple sequential ring files that
+  // allow to retrieve entries given the sequence number. A file would
+  // have constant entry size having the sequence number and the
+  // offset of the body message in the second ring file.
 
   tcp::resolver resolver;
   tcp::socket socket;
@@ -41,21 +39,24 @@ private:
 
   basic_waitable_timer<chrono::system_clock> timer;
 
-  // used for guaranteeing mutual exclusion between methods ans
-  // asynchronous sending of heartbeat 
-  mutex mutex; 
-
-  // must be incremented after sending, never before. Not decided yet
-  // if it is needed a lock (not a priori)
+  // Since proactor model is used, this counter, as well as any other
+  // multithreaded accessed data does not require lock
   unsigned long seq_number = 0;
 
   void heartbeat_sending()
   {
-    lock_guard<std::mutex> lock(mutex);
+    constexpr int Num_HeartBeats = 10;
+    static int count = 0; // tmp, only for bounding the number of executions
     cout << "Sending Heartbeat " << ++seq_number << endl; // TMP trace
     timer.expires_at(timer.expires_at() +
 		     chrono::seconds(this->heartbeat_period));
-    timer.async_wait(std::bind(&FM::FixSession::Impl::heartbeat_sending, this));
+    if (++count < Num_HeartBeats)
+      timer.async_wait(std::bind(&FM::FixSession::Impl::heartbeat_sending, this));
+  }
+
+  void receive() // simulate reception of messages coming of a server
+  {
+
   }
 
 public:
@@ -67,21 +68,24 @@ public:
       timer(io_service, chrono::seconds(heartbeat_period))
   {
     // empty
+    cout << "Created instance of FixSession" << endl
+	 << "  ip_addr = " << ip_addr << endl
+	 << "  port = " << port << endl
+	 << "  hb period = " << heartbeat_period << endl;
   }
 
   bool logon()
   {
-    lock_guard<std::mutex> lock(mutex);
-
     try
       {
+	cout << "Simulating connection to server" << endl;
 	socket.connect(endpoint);
       }
     catch (exception & e)
       {
 	// it is needed more stuff here
 	cout << e.what() << endl;
-	// probably rethrow 
+	// probably rethrow or return false
       }
 
     // here we must review if the connection has been
@@ -91,14 +95,16 @@ public:
 
     timer.async_wait(std::bind(&FM::FixSession::Impl::heartbeat_sending, this));
 
+    cout << "Leaving logon() method" << endl;
+
     return true;
   }
 
   bool logout(/* specific parameters */)
   {
-    lock_guard<std::mutex> lock(mutex);
-
     // TODO: perform the logout
+
+    cout << "Simulating logout" << endl;
 
     timer.cancel();
 
@@ -111,6 +117,10 @@ public:
   }
 };
 
+io_service & FM::FixSession::get_io_service() noexcept
+{
+  return FM::io_service;
+}
 
 FM::FixSession::FixSession(const std::string & ip_addr,
 			   const int port, const size_t heartbeat_period)

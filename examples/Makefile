@@ -34,7 +34,7 @@ SRCS = test-fix-session.cc
 
 OBJS = $(SRCS:.cc=.o)
 
-test-fix-session: test-fix-session.cc
+test-fix-session: test-fix-session.cc $(FIXCLIENTLIBPATH)/libfmfixclient.a
 	$(CXX) $(FLAGS) $(INCLUDE) $@.cc -o $@ -L$(FIXCLIENTLIBPATH) -lfmfixclient
 
 all: test-fix-session

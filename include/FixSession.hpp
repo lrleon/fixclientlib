@@ -4,6 +4,8 @@
 # include <memory>
 # include <string>
 
+# include <asio.hpp>
+
 namespace FM // the Feature Mine namespace
 {
 
@@ -31,7 +33,10 @@ public:
     
   // TODO: other more traditional methods for observing the session state
 
-  bool logout(/* specific parameters */); 
+  bool logout(/* specific parameters */);
+
+  // You could need access to the io_service managing the sessions
+  static asio::io_service & get_io_service() noexcept;
 
 private:
 
@@ -56,6 +61,7 @@ class FixSessionFinder
 };
 
 extern void init();
+extern void wait_for_termination();
 
 }
 

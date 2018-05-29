@@ -24,9 +24,9 @@ OPTIONS= $(FLAGS) $(WARN) $(DEFINES)
 
 CXXFLAGS= -std=c++14 $(INCLUDE) $(OPTIONS)
 
-SRCS = FixSession.cpp
+SRCS = FixSession.cc init.cc
 
-OBJS = $(SRCS:.cpp=.o)
+OBJS = $(SRCS:.cc=.o)
 
 libfmfixclient.a: $(OBJS)
 	$(RM) $@

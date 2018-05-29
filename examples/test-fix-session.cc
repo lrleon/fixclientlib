@@ -22,7 +22,7 @@ ValueArg<size_t> hb_period =
   { "H", "heartbeat", "heartbeat", false, 20, "heartbeat", cmd };
 
 ValueArg<size_t> duration =
-  { "d", "duration", "duration in secs", false, 60, "duration", cmd };
+  { "d", "duration", "duration in secs", false, 30, "duration", cmd };
 
 int test(int argc, char *argv[])
 {
@@ -36,10 +36,16 @@ int test(int argc, char *argv[])
 
   cout << "logon performed" << endl;
 
-  io_service io;
-  basic_waitable_timer<system_clock> timer(io, seconds(::duration.getValue()));
-  timer.wait();
+  FixSession::get_io_service().run();
 
+  // io_service & io = FM::FixSession::get_io_service();
+  // basic_waitable_timer<system_clock> timer(io, seconds(::duration.getValue()));
+  // timer.wait();
+
+  s.logout();
+
+  FM::wait_for_termination();
+  
   cout << "Simulation finished" << endl;
 
   return 0;
@@ -47,6 +53,7 @@ int test(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+  //FM::init();
   return test(argc, argv);
 }
 
