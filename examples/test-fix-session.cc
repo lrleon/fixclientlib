@@ -18,11 +18,11 @@ ValueArg<string> ip_addr =
 ValueArg<int> port =
   { "p", "port", "port number", false, 0, "port number", cmd };
 
-ValueArg<size_t> hb_period =
-  { "H", "heartbeat", "heartbeat", false, 20, "heartbeat", cmd };
+ValueArg<size_t> hb_period = { "H", "heartbeat-period", "heartbeat period",
+			       false, 20, "heartbeat period", cmd };
 
 ValueArg<size_t> duration =
-  { "d", "duration", "duration in secs", false, 30, "duration", cmd };
+  { "d", "duration", "simulation duration in secs", false, 30, "duration", cmd };
 
 int test(int argc, char *argv[])
 {
